@@ -1,0 +1,57 @@
+# JIRA Sprint Reporter - Requirements
+# =====================================
+# Core dependencies for sprint reporting with email capabilities
+
+# JIRA API & HTTP
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Data Processing & Analysis
+pandas==2.1.4
+numpy==1.26.2
+
+# Visualization
+plotly==5.18.0
+kaleido==0.2.1  # For static image export (optional)
+
+# Screenshot Capture (for email reports)
+playwright==1.40.0
+# After installing, run: playwright install chromium
+
+# Image Processing
+Pillow==10.1.0
+
+# Email Support (Windows - Outlook)
+pywin32==306; sys_platform == 'win32'
+
+# Optional: Excel Export
+openpyxl==3.1.2
+
+# Optional: Advanced Logging
+coloredlogs==15.0.1
+
+# Development & Testing (Optional)
+# pytest==7.4.3
+# pytest-cov==4.1.0
+# black==23.12.1
+# flake8==6.1.0
+# mypy==1.7.1
+
+# =====================================
+# Installation Instructions:
+# =====================================
+# 1. Install Python dependencies:
+#    pip install -r requirements.txt
+#
+# 2. Install Playwright browsers:
+#    playwright install chromium
+#
+# 3. (Optional) For Windows Outlook support:
+#    pip install pywin32
+#
+# 4. Configure your environment:
+#    cp .env_template .env
+#    # Edit .env with your JIRA credentials
+#
+# 5. Run the reporter:
+#    python jira_sprint_reporter.py
