@@ -1195,7 +1195,7 @@ class EmailSender:
         except Exception as e:
             logger.info(f"Outlook not available: {e}")
 
-        # Fallback to SMTP
+        #Fallback to SMTP
         if self.config.smtp_server:
             try:
                 return self._send_via_smtp(screenshots, email_html, subject)
@@ -1380,44 +1380,64 @@ class EmailSender:
             email_html: str,
             subject: str
     ) -> bool:
-        """Send email via SMTP with embedded images."""
         import smtplib
+        import ssl
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
         from email.mime.image import MIMEImage
 
-        msg = MIMEMultipart('related')
-        msg['Subject'] = subject
-        msg['From'] = self.config.email_user
-        msg['To'] = ', '.join(self.config.email_recipients)
-        msg['Cc'] = ', '.join(self.config.email_cc_recipients)
+        try:
+            context = ssl.create_default_context()
 
-        # Attach HTML
-        msg_alternative = MIMEMultipart('alternative')
-        msg.attach(msg_alternative)
+            msg = MIMEMultipart('related')
+            msg['Subject'] = subject
+            msg['From'] = self.config.email_user
+            msg['To'] = ', '.join(self.config.email_recipients)
+            logger.info(f"Attempting login with user: {self.config.email_user}")
+            logger.info(f"Password length: {len(self.config.email_password)}")
+            logger.info(f"Recipients: {self.config.email_recipients}")
+            if hasattr(self.config, 'email_cc_recipients') and self.config.email_cc_recipients:
+                msg['Cc'] = ', '.join(self.config.email_cc_recipients)
 
-        html_part = MIMEText(email_html, 'html', 'utf-8')
-        msg_alternative.attach(html_part)
+            # HTML body
+            msg_alternative = MIMEMultipart('alternative')
+            msg.attach(msg_alternative)
+            msg_alternative.attach(MIMEText(email_html, 'html', 'utf-8'))
 
-        # Attach images with CID
-        for section, img_path in screenshots.items():
-            if img_path and os.path.exists(img_path):
-                with open(img_path, 'rb') as img_file:
-                    img_data = img_file.read()
-                    image = MIMEImage(img_data)
-                    image.add_header('Content-ID', f'<{section}>')
-                    image.add_header('Content-Disposition', 'inline', filename=os.path.basename(img_path))
-                    msg.attach(image)
+            # Embed images
+            for section, img_path in screenshots.items():
+                if not img_path or not os.path.exists(img_path):
+                    logger.warning(f"Skipping missing image: {section} → {img_path}")
+                    continue
+                with open(img_path, 'rb') as f:
+                    img = MIMEImage(f.read())
+                    img.add_header('Content-ID', f'<{section}>')
+                    img.add_header('Content-Disposition', 'inline', filename=os.path.basename(img_path))
+                    msg.attach(img)
 
-        logger.info(f"Connecting to SMTP: {self.config.smtp_server}:{self.config.smtp_port}")
+            logger.info(f"Connecting to {self.config.smtp_server}:{self.config.smtp_port}")
 
-        with smtplib.SMTP(self.config.smtp_server, self.config.smtp_port) as server:
-            server.starttls()
-            server.login(self.config.email_user, self.config.email_password)
-            server.send_message(msg)
+            with smtplib.SMTP_SSL(
+                    self.config.smtp_server,
+                    self.config.smtp_port,
+                    context=context
+            ) as server:
+                logger.info(f"logging in...")
+                server.login(self.config.email_user, self.config.email_password)
+                logger.info(f"logged in...")
+                server.send_message(msg)
 
-        logger.info("Email sent successfully via SMTP")
-        return True
+
+            logger.info("Email sent successfully via SMTP")
+            return True
+
+        except smtplib.SMTPAuthenticationError as e:
+            logger.error(f"Authentication failed: {e} → most likely wrong app password or 2FA not set up correctly")
+            logger.error("→ Go to https://myaccount.google.com/apppasswords and generate a new one")
+            return False
+        except Exception as e:
+            logger.error(f"SMTP send failed: {e}", exc_info=True)
+            return False
 
 
 def main():
