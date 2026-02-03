@@ -37,13 +37,14 @@ Generate beautiful, interactive HTML reports from your JIRA sprints and automati
 - 🐛 **Defect Tracking** - Priority breakdown, resolution rates
 - 📝 **Detailed Tables** - Sortable, filterable DataTables
 - 🎨 **Professional Design** - Modern, responsive HTML/CSS
-
+![html_report.png](html_report.png)
 ### Email Features
 - 📧 **Embedded Images** - Screenshots embedded directly in email body
 - 🖼️ **Optimized for Email** - Resized images for faster delivery
 - 📱 **Mobile-Friendly** - Responsive table-based layout
 - 🔄 **Dual Delivery** - Supports both Outlook and SMTP
 
+![email_image.png](email_image.png)
 ---
 
 ## 💻 Requirements
