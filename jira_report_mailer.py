@@ -405,7 +405,35 @@ class ReportGenerator:
         if df.empty:
             return "<p>No data available</p>"
 
+        # Get status counts
         status_counts = df['Status'].value_counts()
+
+        # === COMPREHENSIVE DEBUGGING ===
+        print(f"\n{'=' * 60}")
+        print(f"DEBUG: Creating {title} Chart")
+        print(f"{'=' * 60}")
+        print(f"Total rows in DataFrame: {len(df)}")
+        print(f"Unique statuses: {df['Status'].nunique()}")
+        print(f"\nStatus breakdown:")
+        for status, count in status_counts.items():
+            percentage = (count / status_counts.sum()) * 100
+            print(f"  {status:20s}: {count:3d} ({percentage:5.1f}%)")
+        print(f"\nTotal: {status_counts.sum()}")
+
+        # Verify the data types
+        print(f"\nData types:")
+        print(f"  status_counts.index type: {type(status_counts.index)}")
+        print(f"  status_counts.values type: {type(status_counts.values)}")
+        print(f"  First value type: {type(status_counts.values[0])}")
+
+        # Check for any NaN or infinite values
+        if status_counts.isna().any():
+            print("WARNING: NaN values detected in counts!")
+        if (status_counts == 0).any():
+            print("WARNING: Zero values detected in counts!")
+
+        print(f"{'=' * 60}\n")
+        # === END DEBUGGING ===
 
         color_map = {
             'Done': '#28a745',
@@ -423,16 +451,14 @@ class ReportGenerator:
         colors = [color_map.get(status, f'#{hash(status) % 0xFFFFFF:06x}') for status in status_counts.index]
 
         fig = go.Figure(data=[go.Pie(
-            labels=status_counts.index,
-            values=status_counts.values,
+            labels=status_counts.index.tolist(),  # Convert to list explicitly
+            values=status_counts.values.tolist(),  # Convert to list explicitly
             marker=dict(colors=colors, line=dict(color='white', width=2)),
             hole=0.4,
             textinfo='label+percent',
             textposition='outside',
             textfont=dict(size=11),
             hovertemplate='<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent}<extra></extra>',
-            # Remove the pull parameter entirely, or set it to 0
-            # pull = [0.05] * len(status_counts)  # DELETE THIS LINE
         )])
 
         fig.update_layout(
