@@ -430,8 +430,9 @@ class ReportGenerator:
             textinfo='label+percent',
             textposition='outside',
             textfont=dict(size=11),
-            hovertemplate='<b>%{label}</b> Count: %{value} Percentage: %{percent} < extra > < / extra > ',
-        pull = [0.05] * len(status_counts)
+            hovertemplate='<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent}<extra></extra>',
+            # Remove the pull parameter entirely, or set it to 0
+            # pull = [0.05] * len(status_counts)  # DELETE THIS LINE
         )])
 
         fig.update_layout(
